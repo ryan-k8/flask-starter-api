@@ -8,7 +8,7 @@ class anime():
         # gogoanime2.org/search/ : (alt.)
         response_html = requests.get(
             f'https://www.gogoanime.ai/search.html?keyword={name}').text
-        soup = BeautifulSoup(response_html, 'lxml')
+        soup = BeautifulSoup(response_html, 'html.parser')
         items = soup.find('ul', {'class': 'items'}).find_all('li')
         results = []
         for i in items:
@@ -26,7 +26,7 @@ class anime():
             animelink = 'https://gogoanime.ai/category/{}'.format(animeid)
             response = requests.get(animelink)
             plainText = response.text
-            soup = BeautifulSoup(plainText, "lxml")
+            soup = BeautifulSoup(plainText, "html.parser")
             source_url = soup.find("div", {"class": "anime_info_body_bg"}).img
             imgg = source_url.get('src')
             tit_url = soup.find(
@@ -57,8 +57,23 @@ class anime():
             res_detail_search = {"title": f"{tit_url}", "year": f"{year}", "other_names": f"{oth_names}", "type": f"{type_of_show}",
                                  "status": f"{status}", "genre": f"{genres}", "episodes": f"{ep_num}", "image_url": f"{imgg}", "plot_summary": f"{plot_summary}"}
             return res_detail_search
-        except AttributeError:
+        except:
             pass
-        #     return {"status": "400", "reason": "Invalid animeid"}
-        # except requests.exceptions.ConnectionError:
-        #     return {"status": "404", "reason": "Check the host's network Connection"}
+
+    def stream_anime(animeid, episode):
+        BASE_URL = f'https://gogoanime.ai/{animeid}-episode-{episode}'
+        RESULT_DICT = {'anime-id': f'{animeid}', 'episode': f'{episode}'}
+        response = requests.get(BASE_URL)
+        if (response.status_code == 200):
+            soup = BeautifulSoup(response.text, 'html.parser')
+            Ep_not_exist = soup.find('h1', {'class': 'entry-title'})
+            if (Ep_not_exist is None):
+                RESULT_DICT.update({'episode_exists': 'true'})
+                div = soup.find('div', {'class': 'anime_muti_link'}).find('ul')
+                div_li = div.find_all('li')
+                for i in div_li:
+                    RESULT_DICT.update(
+                        {f"{i['class'][0]}": f"{i.a['data-video']}"})
+                return RESULT_DICT
+            else:
+                return {'episode_exists': 'false'}

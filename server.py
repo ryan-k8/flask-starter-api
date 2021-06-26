@@ -21,10 +21,10 @@ def search(name):
     return result
 
 
-@ app.route('/getdetails/<animeid>')
+@app.route('/getdetails/<animeid>')
 def get_details(animeid):
     from api.example import anime
-    result = None
+    result = {'message': 'i don"t know shit'}
     while True:
         try:
             result = anime.anime_details(animeid)
@@ -32,6 +32,19 @@ def get_details(animeid):
         except:
             pass
     return result
+
+
+@app.route('/stream/<animeid>/ep/<ep_no>')
+def stream(animeid, ep_no):
+    from api.example import anime
+    test_result = ''
+    while True:
+        try:
+            test_result = anime.stream_anime(animeid, ep_no)
+            break
+        except:
+            pass
+    return test_result
 
 
 if __name__ == "__main__":
